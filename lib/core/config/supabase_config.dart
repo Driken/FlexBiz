@@ -8,11 +8,9 @@ class SupabaseConfig {
   // 3. Vá em Settings > API
   // 4. Copie a "Project URL" e a "anon public" key
 
-  // TODO: Substitua pelos valores reais do seu projeto
-  static const String supabaseUrl =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbHdiYnBjamtnZ2xoZnR4ZXluIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzA5MTM3NCwiZXhwIjoyMDgyNjY3Mzc0fQ.MKyQQOGntJ90No-z8iFINmuvlC0itkztmbseQjGkF6g';
-  static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbHdiYnBjamtnZ2xoZnR4ZXluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwOTEzNzQsImV4cCI6MjA4MjY2NzM3NH0.EM-m_V_QgF_y8sMfRCsnGyBEyPtJaFWBu_uTQjdDEQ4';
+  // Credenciais obtidas automaticamente via MCP Supabase
+  static const String supabaseUrl = 'https://jglwbbpcjkgglhftxeyn.supabase.co';
+  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbHdiYnBjamtnZ2xoZnR4ZXluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwOTEzNzQsImV4cCI6MjA4MjY2NzM3NH0.EM-m_V_QgF_y8sMfRCsnGyBEyPtJaFWBu_uTQjdDEQ4';
 
   static Future<void> initialize() async {
     // Verifica se as credenciais foram configuradas
