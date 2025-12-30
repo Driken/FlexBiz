@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../shared/widgets/app_drawer.dart';
-import '../../shared/providers/session_provider.dart';
+import 'package:flexbiz/presentation/shared/widgets/app_drawer.dart';
+import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
+import 'package:flexbiz/core/utils/currency_utils.dart';
 import '../providers/items_provider.dart';
-import '../screens/item_form_screen.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../data/models/item_model.dart';
+import 'item_form_screen.dart';
 
 class ItemsListScreen extends ConsumerStatefulWidget {
   const ItemsListScreen({super.key});

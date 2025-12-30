@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
@@ -33,14 +34,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Erro ao fazer login';
+        
+        // Mensagens de erro mais amigáveis
+        final errorString = e.toString();
+        if (errorString.contains('404') || errorString.contains('Not Found')) {
+          errorMessage = 'Erro: Supabase não configurado ou URL inválida.\n'
+              'Verifique as credenciais em lib/core/config/supabase_config.dart';
+        } else if (errorString.contains('Invalid login credentials') || 
+                   errorString.contains('Email not confirmed')) {
+          errorMessage = 'Email ou senha incorretos';
+        } else if (errorString.contains('Network')) {
+          errorMessage = 'Erro de conexão. Verifique sua internet';
+        } else {
+          errorMessage = 'Erro: ${e.toString()}';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao fazer login: ${e.toString()}'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
           ),
         );
       }
     }
+  }
+
+  void _fillTestCredentials() {
+    setState(() {
+      _emailController.text = 'teste@flexbiz.com';
+      _passwordController.text = '123456';
+    });
   }
 
   @override
@@ -126,6 +156,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 32),
+                  if (kDebugMode)
+                    OutlinedButton.icon(
+                      onPressed: _fillTestCredentials,
+                      icon: const Icon(Icons.bug_report, size: 18),
+                      label: const Text('Preencher Conta Teste'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.orange,
+                        side: const BorderSide(color: Colors.orange),
+                      ),
+                    ),
+                  if (kDebugMode) const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: authState.isLoading ? null : _handleLogin,
                     child: authState.isLoading

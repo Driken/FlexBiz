@@ -10,8 +10,8 @@ import '../../../data/models/order_model.dart';
 import '../../../data/models/order_item_model.dart';
 import '../../../data/repositories/order_repository.dart';
 import '../providers/orders_provider.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../core/utils/date_utils.dart';
+import 'package:flexbiz/core/utils/currency_utils.dart';
+import 'package:flexbiz/core/utils/date_utils.dart' as app_date_utils;
 
 class OrderFormScreen extends ConsumerStatefulWidget {
   const OrderFormScreen({super.key});
@@ -28,7 +28,6 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
   int _installmentsCount = 1;
   int _installmentsIntervalDays = 30;
   DateTime _orderDate = DateTime.now();
-  bool _isLoading = false;
 
   double get _totalAmount {
     double total = 0.0;
@@ -48,10 +47,6 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
       );
       return;
     }
-
-    setState(() {
-      _isLoading = true;
-    });
 
     try {
       final session = ref.read(sessionProvider).value;
@@ -110,12 +105,6 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
             backgroundColor: Colors.red,
           ),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
@@ -429,7 +418,7 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
                         });
                       }
                     },
-                    child: Text(DateUtils.formatDate(_orderDate)),
+                    child: Text(app_date_utils.DateUtils.formatDate(_orderDate)),
                   ),
                 ),
                 ListTile(

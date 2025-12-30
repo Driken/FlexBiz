@@ -5,9 +5,8 @@ import '../../shared/providers/session_provider.dart';
 import '../providers/orders_provider.dart';
 import '../screens/order_form_screen.dart';
 import '../screens/order_detail_screen.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../core/utils/date_utils.dart';
-import '../../../data/models/order_model.dart';
+import 'package:flexbiz/core/utils/currency_utils.dart';
+import 'package:flexbiz/core/utils/date_utils.dart' as app_date_utils;
 
 class OrdersListScreen extends ConsumerStatefulWidget {
   const OrdersListScreen({super.key});
@@ -121,7 +120,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              DateUtils.formatDate(order.orderDate),
+                              app_date_utils.DateUtils.formatDate(order.orderDate),
                             ),
                             if (order.totalAmount != null)
                               Text(

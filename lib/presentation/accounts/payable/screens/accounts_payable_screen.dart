@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../core/utils/date_utils.dart';
-import '../../../data/models/account_payable_model.dart';
-import '../../../data/repositories/account_payable_repository.dart';
-import '../../shared/widgets/app_drawer.dart';
-import '../../shared/providers/session_provider.dart';
+import 'package:flexbiz/core/utils/currency_utils.dart';
+import 'package:flexbiz/core/utils/date_utils.dart' as app_date_utils;
+import 'package:flexbiz/data/models/account_payable_model.dart';
+import 'package:flexbiz/data/repositories/account_payable_repository.dart';
+import 'package:flexbiz/presentation/shared/widgets/app_drawer.dart';
+import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
 import '../providers/accounts_payable_provider.dart';
-import '../screens/account_payable_form_screen.dart';
+import 'account_payable_form_screen.dart';
 
 class AccountsPayableScreen extends ConsumerStatefulWidget {
   const AccountsPayableScreen({super.key});
@@ -62,7 +62,7 @@ class _AccountsPayableScreenState extends ConsumerState<AccountsPayableScreen> {
               final filteredAccounts = _selectedFilter == null
                   ? accounts
                   : accounts
-                      .where((a) => a.status == _selectedFilter)
+                      .where((a) => a.status == _selectedFilter!)
                       .toList();
 
               if (filteredAccounts.isEmpty) {
@@ -130,11 +130,11 @@ class _AccountsPayableScreenState extends ConsumerState<AccountsPayableScreen> {
                               Text('Fornecedor: ${account.supplierName}'),
                             if (account.dueDate != null)
                               Text(
-                                'Vencimento: ${DateUtils.formatDate(account.dueDate)}',
+                                'Vencimento: ${app_date_utils.DateUtils.formatDate(account.dueDate)}',
                               ),
                             if (account.paymentDate != null)
                               Text(
-                                'Pagamento: ${DateUtils.formatDate(account.paymentDate)}',
+                                'Pagamento: ${app_date_utils.DateUtils.formatDate(account.paymentDate)}',
                                 style: const TextStyle(color: Colors.green),
                               ),
                           ],
@@ -169,7 +169,8 @@ class _AccountsPayableScreenState extends ConsumerState<AccountsPayableScreen> {
                         onTap: account.isPaid
                             ? null
                             : () {
-                                _showMarkAsPaidDialog(account, session.companyId);
+                                _showMarkAsPaidDialog(
+                                    account, session.companyId);
                               },
                       ),
                     );
@@ -200,8 +201,7 @@ class _AccountsPayableScreenState extends ConsumerState<AccountsPayableScreen> {
     );
   }
 
-  void _showMarkAsPaidDialog(
-      AccountPayableModel account, String companyId) {
+  void _showMarkAsPaidDialog(AccountPayableModel account, String companyId) {
     DateTime selectedDate = DateTime.now();
 
     showDialog(
@@ -229,7 +229,7 @@ class _AccountsPayableScreenState extends ConsumerState<AccountsPayableScreen> {
                   }
                 },
                 child: Text(
-                  'Data de Pagamento: ${DateUtils.formatDate(selectedDate)}',
+                  'Data de Pagamento: ${app_date_utils.DateUtils.formatDate(selectedDate)}',
                 ),
               ),
             ],
@@ -273,4 +273,3 @@ class _AccountsPayableScreenState extends ConsumerState<AccountsPayableScreen> {
     );
   }
 }
-

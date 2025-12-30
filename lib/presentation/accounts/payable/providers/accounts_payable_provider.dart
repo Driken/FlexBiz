@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/account_payable_model.dart';
-import '../../../data/repositories/account_payable_repository.dart';
+import 'package:flexbiz/data/models/account_payable_model.dart';
+import 'package:flexbiz/data/repositories/account_payable_repository.dart';
 
 final accountPayableRepositoryProvider =
     Provider<AccountPayableRepository>((ref) {

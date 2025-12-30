@@ -1,6 +1,5 @@
 import '../models/order_model.dart';
 import '../models/order_item_model.dart';
-import '../models/account_receivable_model.dart';
 import '../../core/config/supabase_config.dart';
 
 class OrderRepository {
@@ -10,14 +9,13 @@ class OrderRepository {
     var query = _supabase
         .from('orders')
         .select()
-        .eq('company_id', companyId)
-        .order('order_date', ascending: false);
+        .eq('company_id', companyId);
 
     if (status != null) {
       query = query.eq('status', status);
     }
 
-    final response = await query;
+    final response = await query.order('order_date', ascending: false);
     return (response as List)
         .map((json) => OrderModel.fromJson(json))
         .toList();

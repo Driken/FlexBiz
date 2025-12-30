@@ -4,8 +4,8 @@ import '../../shared/providers/session_provider.dart';
 import '../providers/orders_provider.dart';
 import '../../../data/repositories/order_repository.dart';
 import '../../../data/repositories/account_receivable_repository.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../core/utils/date_utils.dart';
+import 'package:flexbiz/core/utils/currency_utils.dart';
+import 'package:flexbiz/core/utils/date_utils.dart' as app_date_utils;
 import '../../../data/models/order_item_model.dart';
 import '../../../data/models/account_receivable_model.dart';
 
@@ -43,7 +43,7 @@ class OrderDetailScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         _DetailRow(
                           label: 'Data',
-                          value: DateUtils.formatDate(order.orderDate),
+                          value: app_date_utils.DateUtils.formatDate(order.orderDate),
                         ),
                         _DetailRow(
                           label: 'Status',
@@ -161,7 +161,7 @@ class OrderDetailScreen extends ConsumerWidget {
                             return ListTile(
                               title: Text(account.description ?? 'Sem descrição'),
                               subtitle: Text(
-                                'Vencimento: ${DateUtils.formatDate(account.dueDate)}',
+                                'Vencimento: ${app_date_utils.DateUtils.formatDate(account.dueDate)}',
                               ),
                               trailing: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/account_payable_model.dart';
-import '../../../data/repositories/account_payable_repository.dart';
-import '../../shared/providers/session_provider.dart';
+import 'package:flexbiz/data/models/account_payable_model.dart';
+import 'package:flexbiz/data/repositories/account_payable_repository.dart';
+import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
+import 'package:flexbiz/core/utils/date_utils.dart' as app_date_utils;
 import '../providers/accounts_payable_provider.dart';
-import '../../../core/utils/date_utils.dart';
 
 class AccountPayableFormScreen extends ConsumerStatefulWidget {
   const AccountPayableFormScreen({super.key});
@@ -150,7 +150,7 @@ class _AccountPayableFormScreenState
                 title: const Text('Data de Vencimento'),
                 subtitle: Text(
                   _dueDate != null
-                      ? DateUtils.formatDate(_dueDate)
+                      ? app_date_utils.DateUtils.formatDate(_dueDate)
                       : 'Selecione a data',
                 ),
                 trailing: IconButton(

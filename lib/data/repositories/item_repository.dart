@@ -8,14 +8,13 @@ class ItemRepository {
     var query = _supabase
         .from('items')
         .select()
-        .eq('company_id', companyId)
-        .order('name');
+        .eq('company_id', companyId);
 
     if (isActive != null) {
       query = query.eq('is_active', isActive);
     }
 
-    final response = await query;
+    final response = await query.order('name');
     return (response as List)
         .map((json) => ItemModel.fromJson(json))
         .toList();

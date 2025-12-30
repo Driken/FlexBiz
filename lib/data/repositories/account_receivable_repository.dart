@@ -14,8 +14,7 @@ class AccountReceivableRepository {
     var query = _supabase
         .from('accounts_receivable')
         .select()
-        .eq('company_id', companyId)
-        .order('due_date', ascending: true);
+        .eq('company_id', companyId);
 
     if (status != null) {
       query = query.eq('status', status);
@@ -29,7 +28,7 @@ class AccountReceivableRepository {
       query = query.lte('due_date', endDate.toIso8601String().split('T')[0]);
     }
 
-    final response = await query;
+    final response = await query.order('due_date', ascending: true);
     return (response as List)
         .map((json) => AccountReceivableModel.fromJson(json))
         .toList();

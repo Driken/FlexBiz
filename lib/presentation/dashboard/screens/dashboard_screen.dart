@@ -4,9 +4,8 @@ import '../../shared/widgets/app_drawer.dart';
 import '../../shared/widgets/kpi_card.dart';
 import '../../shared/providers/session_provider.dart';
 import '../providers/dashboard_provider.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../core/utils/date_utils.dart';
-import '../../../data/models/account_receivable_model.dart';
+import 'package:flexbiz/core/utils/currency_utils.dart';
+import 'package:flexbiz/core/utils/date_utils.dart' as app_date_utils;
 import '../../accounts/receivable/screens/accounts_receivable_screen.dart';
 import '../../accounts/payable/screens/accounts_payable_screen.dart';
 import '../../items/screens/items_list_screen.dart';
@@ -145,7 +144,7 @@ class DashboardScreen extends ConsumerWidget {
                               leading: const Icon(Icons.calendar_today),
                               title: Text(account.description ?? 'Sem descrição'),
                               subtitle: Text(
-                                'Vence em: ${DateUtils.formatDate(account.dueDate)}',
+                                'Vence em: ${app_date_utils.DateUtils.formatDate(account.dueDate)}',
                               ),
                               trailing: Text(
                                 CurrencyUtils.format(account.amount),

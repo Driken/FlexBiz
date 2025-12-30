@@ -1,8 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../data/models/profile_model.dart';
-import '../../../data/repositories/auth_repository.dart';
-import '../../../core/config/supabase_config.dart';
+import 'package:flexbiz/data/models/profile_model.dart';
+import 'package:flexbiz/data/repositories/auth_repository.dart';
+import 'package:flexbiz/core/config/supabase_config.dart';
 
 class Session {
   final String userId;

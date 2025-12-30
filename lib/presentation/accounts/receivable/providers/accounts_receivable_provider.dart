@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/account_receivable_model.dart';
-import '../../../data/repositories/account_receivable_repository.dart';
+import 'package:flexbiz/data/models/account_receivable_model.dart';
+import 'package:flexbiz/data/repositories/account_receivable_repository.dart';
 
 final accountReceivableRepositoryProvider =
     Provider<AccountReceivableRepository>((ref) {
@@ -14,4 +14,3 @@ final accountsReceivableProvider =
     return await repo.getAccounts(companyId);
   },
 );
-

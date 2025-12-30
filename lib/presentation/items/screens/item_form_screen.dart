@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/item_model.dart';
-import '../../../data/repositories/item_repository.dart';
-import '../../shared/providers/session_provider.dart';
+import 'package:flexbiz/data/models/item_model.dart';
+import 'package:flexbiz/data/repositories/item_repository.dart';
+import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
 import '../providers/items_provider.dart';
-import '../../../core/utils/currency_utils.dart';
 
 class ItemFormScreen extends ConsumerStatefulWidget {
   final ItemModel? item;
