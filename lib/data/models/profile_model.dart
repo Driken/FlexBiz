@@ -35,5 +35,6 @@ class ProfileModel {
 
   bool get isOwner => role == 'owner';
   bool get isAdmin => role == 'admin' || isOwner;
+  bool get isSuperAdmin => role == 'super_admin';
 }
 

@@ -8,6 +8,7 @@ import '../../customers/screens/customers_list_screen.dart';
 import '../../orders/screens/orders_list_screen.dart';
 import '../../accounts/receivable/screens/accounts_receivable_screen.dart';
 import '../../accounts/payable/screens/accounts_payable_screen.dart';
+import '../../admin/screens/admin_screen.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -52,12 +53,30 @@ class AppDrawer extends ConsumerWidget {
                             color: Colors.white,
                           ),
                     ),
-                    Text(
-                      'Empresa: ${session.companyId.substring(0, 8)}...',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white70,
+                    if (session.profile.isSuperAdmin)
+                      Container(
+                        margin: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.purple,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'SUPER ADMIN',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
                           ),
-                    ),
+                        ),
+                      )
+                    else
+                      Text(
+                        'Empresa: ${session.companyId.substring(0, 8)}...',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.white70,
+                            ),
+                      ),
                   ],
                 ),
               );
@@ -149,6 +168,34 @@ class AppDrawer extends ConsumerWidget {
                 ),
               );
             },
+          ),
+          sessionAsync.when(
+            data: (session) {
+              if (session != null && session.profile.isSuperAdmin) {
+                return Column(
+                  children: [
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.admin_panel_settings, color: Colors.purple),
+                      title: const Text('Administração'),
+                      subtitle: const Text('Super Admin'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AdminScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
           const Divider(),
           ListTile(
