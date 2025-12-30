@@ -4,7 +4,7 @@ import 'package:flexbiz/presentation/shared/widgets/app_drawer.dart';
 import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
 import 'package:flexbiz/core/utils/currency_utils.dart';
 import '../providers/items_provider.dart';
-import 'item_form_screen.dart';
+import 'item_form_dialog.dart';
 
 class ItemsListScreen extends ConsumerStatefulWidget {
   const ItemsListScreen({super.key});
@@ -101,13 +101,15 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                                 label: const Text('Inativo'),
                                 backgroundColor: Colors.grey[300],
                               ),
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          final result = await ItemFormDialog.show(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => ItemFormScreen(item: item),
-                            ),
+                            item: item,
                           );
+                          if (result == true) {
+                            ref.invalidate(itemsProvider(session.companyId));
+                            ref.invalidate(activeItemsProvider(session.companyId));
+                          }
                         },
                       ),
                     );
@@ -124,16 +126,21 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Erro: $error')),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ItemFormScreen(),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: sessionAsync.when(
+        data: (session) => session == null
+            ? null
+            : FloatingActionButton(
+                onPressed: () async {
+                  final result = await ItemFormDialog.show(context);
+                  if (result == true) {
+                    ref.invalidate(itemsProvider(session.companyId));
+                    ref.invalidate(activeItemsProvider(session.companyId));
+                  }
+                },
+                child: const Icon(Icons.add),
+              ),
+        loading: () => null,
+        error: (_, __) => null,
       ),
     );
   }

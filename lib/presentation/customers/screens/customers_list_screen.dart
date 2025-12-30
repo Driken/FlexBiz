@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/widgets/app_drawer.dart';
 import '../../shared/providers/session_provider.dart';
 import '../providers/customers_provider.dart';
-import '../screens/customer_form_screen.dart';
+import '../screens/customer_form_dialog.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../data/repositories/customer_repository.dart';
+import '../../../data/models/customer_model.dart';
 
 class CustomersListScreen extends ConsumerStatefulWidget {
   const CustomersListScreen({super.key});
@@ -144,14 +145,56 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
                                         ),
                                     ],
                                   ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            CustomerFormScreen(customer: customer),
+                                  trailing: PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert),
+                                    onSelected: (value) async {
+                                      if (value == 'edit') {
+                                        final result = await CustomerFormDialog.show(
+                                          context,
+                                          customer: customer,
+                                        );
+                                        if (result == true) {
+                                          ref.invalidate(customersProvider(session.companyId));
+                                        }
+                                      } else if (value == 'delete') {
+                                        await _confirmDeleteCustomer(
+                                          context,
+                                          customer,
+                                          session.companyId,
+                                        );
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(
+                                        value: 'edit',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.edit, size: 20),
+                                            SizedBox(width: 8),
+                                            Text('Editar'),
+                                          ],
+                                        ),
                                       ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.delete, size: 20, color: Colors.red),
+                                            SizedBox(width: 8),
+                                            Text('Excluir', style: TextStyle(color: Colors.red)),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () async {
+                                    final result = await CustomerFormDialog.show(
+                                      context,
+                                      customer: customer,
                                     );
+                                    if (result == true) {
+                                      ref.invalidate(customersProvider(session.companyId));
+                                    }
                                   },
                                 ),
                               );
@@ -174,18 +217,118 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Erro: $error')),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CustomerFormScreen(),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: sessionAsync.when(
+        data: (session) => session == null
+            ? null
+            : FloatingActionButton(
+                onPressed: () async {
+                  final result = await CustomerFormDialog.show(context);
+                  if (result == true) {
+                    ref.invalidate(customersProvider(session.companyId));
+                  }
+                },
+                child: const Icon(Icons.add),
+              ),
+        loading: () => null,
+        error: (_, __) => null,
       ),
     );
+  }
+
+  Future<void> _confirmDeleteCustomer(
+    BuildContext context,
+    CustomerModel customer,
+    String companyId,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar Exclusão'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Tem certeza que deseja excluir este cliente?',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning, color: Colors.red, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      customer.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Esta ação não pode ser desfeita.',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final repo = CustomerRepository();
+        await repo.deleteCustomer(customer.id);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cliente excluído com sucesso!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          ref.invalidate(customersProvider(companyId));
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao excluir cliente: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 }
 

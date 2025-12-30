@@ -55,10 +55,51 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Erro ao criar conta';
+        String errorDetails = e.toString();
+        
+        // Tratamento específico para rate limit
+        if (errorDetails.contains('rate_limit') || 
+            errorDetails.contains('over_email_send_rate_limit') ||
+            errorDetails.contains('53 seconds')) {
+          errorMessage = 'Limite de tentativas excedido';
+          errorDetails = 'Por segurança, você só pode solicitar o cadastro novamente após cerca de 1 minuto. '
+              'Aguarde um momento e tente novamente.';
+        } else if (errorDetails.contains('User already registered')) {
+          errorMessage = 'Email já cadastrado';
+          errorDetails = 'Este email já está cadastrado no sistema. Tente fazer login.';
+        } else if (errorDetails.contains('Invalid email')) {
+          errorMessage = 'Email inválido';
+          errorDetails = 'Por favor, verifique se o email está correto.';
+        } else if (errorDetails.contains('Password')) {
+          errorMessage = 'Senha inválida';
+          errorDetails = 'A senha deve ter pelo menos 6 caracteres.';
+        } else if (errorDetails.contains('infinite recursion') || 
+                   errorDetails.contains('42P17')) {
+          errorMessage = 'Erro de configuração';
+          errorDetails = 'Ocorreu um erro na configuração do sistema. '
+              'Por favor, entre em contato com o suporte técnico.';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao criar conta: ${e.toString()}'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  errorMessage,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  errorDetails,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
