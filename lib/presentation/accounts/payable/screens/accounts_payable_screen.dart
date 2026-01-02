@@ -7,7 +7,7 @@ import 'package:flexbiz/data/repositories/account_payable_repository.dart';
 import 'package:flexbiz/presentation/shared/widgets/app_drawer.dart';
 import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
 import '../providers/accounts_payable_provider.dart';
-import 'account_payable_form_dialog.dart';
+import 'account_payable_form_screen.dart';
 
 class AccountsPayableScreen extends ConsumerStatefulWidget {
   const AccountsPayableScreen({super.key});
@@ -187,20 +187,16 @@ class _AccountsPayableScreenState extends ConsumerState<AccountsPayableScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Erro: $error')),
       ),
-      floatingActionButton: sessionAsync.when(
-        data: (session) => session == null
-            ? null
-            : FloatingActionButton(
-                onPressed: () async {
-                  final result = await AccountPayableFormDialog.show(context);
-                  if (result == true) {
-                    ref.invalidate(accountsPayableProvider(session.companyId));
-                  }
-                },
-                child: const Icon(Icons.add),
-              ),
-        loading: () => null,
-        error: (_, __) => null,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AccountPayableFormScreen(),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
