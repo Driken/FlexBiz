@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flexbiz/presentation/shared/widgets/app_drawer.dart';
-import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
-import 'package:flexbiz/core/utils/currency_utils.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_list_item.dart';
+import '../../shared/widgets/app_drawer.dart';
+import '../../shared/providers/session_provider.dart';
+import '../../../core/utils/currency_utils.dart';
 import '../providers/items_provider.dart';
 import 'item_form_screen.dart';
 
@@ -21,25 +23,42 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     final sessionAsync = ref.watch(sessionProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Itens'),
         actions: [
-          Switch(
-            value: _showOnlyActive,
-            onChanged: (value) {
-              setState(() {
-                _showOnlyActive = value;
-              });
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Apenas ativos',
+                  style: AppTypography.caption,
+                ),
+                Switch(
+                  value: _showOnlyActive,
+                  onChanged: (value) {
+                    setState(() {
+                      _showOnlyActive = value;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       drawer: const AppDrawer(),
       body: sessionAsync.when(
         data: (session) {
           if (session == null) {
-            return const Center(child: Text('Sessão não encontrada'));
+            return Center(
+              child: Text(
+                'Sessão não encontrada',
+                style: AppTypography.body,
+              ),
+            );
           }
 
           final itemsAsync = _showOnlyActive
@@ -56,17 +75,19 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                       Icon(
                         Icons.inventory_2_outlined,
                         size: 64,
-                        color: Colors.grey[400],
+                        color: AppColors.textDisabled,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.blockSpacing),
                       Text(
                         'Nenhum item cadastrado',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: AppTypography.subtitle,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         'Toque no + para adicionar',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: AppTypography.body.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -80,36 +101,46 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                 },
                 child: ListView.builder(
                   itemCount: items.length,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   itemBuilder: (context, index) {
                     final item = items[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          child: Icon(
-                            item.isProduct ? Icons.shopping_bag : Icons.build,
-                          ),
-                        ),
-                        title: Text(item.name),
-                        subtitle: Text(
+                    return AppListItem(
+                      title: item.name,
+                      subtitle:
                           '${item.type == 'product' ? 'Produto' : 'Serviço'}${item.price != null ? ' • ${CurrencyUtils.format(item.price!)}' : ''}',
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.primarySoft,
+                        child: Icon(
+                          item.isProduct ? Icons.shopping_bag : Icons.build,
+                          color: AppColors.primary,
                         ),
-                        trailing: item.isActive
-                            ? null
-                            : Chip(
-                                label: const Text('Inativo'),
-                                backgroundColor: Colors.grey[300],
-                              ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ItemFormScreen(item: item),
-                            ),
-                          );
-                        },
                       ),
+                      trailing: item.isActive
+                          ? null
+                          : Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.textDisabled.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Inativo',
+                                style: AppTypography.caption.copyWith(
+                                  color: AppColors.textDisabled,
+                                ),
+                              ),
+                            ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ItemFormScreen(item: item),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -117,12 +148,20 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Center(
-              child: Text('Erro: $error'),
+              child: Text(
+                'Erro: $error',
+                style: AppTypography.body.copyWith(color: AppColors.error),
+              ),
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Erro: $error')),
+        error: (error, stack) => Center(
+          child: Text(
+            'Erro: $error',
+            style: AppTypography.body.copyWith(color: AppColors.error),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -133,7 +172,8 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.add, color: AppColors.textInverse),
       ),
     );
   }

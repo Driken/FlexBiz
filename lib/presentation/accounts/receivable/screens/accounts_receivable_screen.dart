@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flexbiz/core/utils/currency_utils.dart';
-import 'package:flexbiz/core/utils/date_utils.dart' as app_date_utils;
-import 'package:flexbiz/data/models/account_receivable_model.dart';
-import 'package:flexbiz/data/repositories/account_receivable_repository.dart';
-import 'package:flexbiz/presentation/shared/widgets/app_drawer.dart';
-import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_list_item.dart';
+import '../../../../core/widgets/status_badge.dart';
+import '../../../../core/utils/currency_utils.dart';
+import '../../../../core/utils/date_utils.dart' as app_date_utils;
+import '../../../../data/models/account_receivable_model.dart';
+import '../../../../data/repositories/account_receivable_repository.dart';
+import '../../../shared/widgets/app_drawer.dart';
+import '../../../shared/providers/session_provider.dart';
 import '../providers/accounts_receivable_provider.dart';
 
 class AccountsReceivableScreen extends ConsumerStatefulWidget {
@@ -20,11 +23,18 @@ class _AccountsReceivableScreenState
     extends ConsumerState<AccountsReceivableScreen> {
   String? _selectedFilter;
 
+  FinancialStatus _getStatus(String? status) {
+    if (status == 'paid') return FinancialStatus.paid;
+    if (status == 'late') return FinancialStatus.late;
+    return FinancialStatus.open;
+  }
+
   @override
   Widget build(BuildContext context) {
     final sessionAsync = ref.watch(sessionProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Contas a Receber'),
         actions: [
@@ -41,7 +51,7 @@ class _AccountsReceivableScreenState
               const PopupMenuItem(value: 'late', child: Text('Atrasadas')),
             ],
             child: const Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(AppSpacing.lg),
               child: Icon(Icons.filter_list),
             ),
           ),
@@ -51,7 +61,12 @@ class _AccountsReceivableScreenState
       body: sessionAsync.when(
         data: (session) {
           if (session == null) {
-            return const Center(child: Text('Sessão não encontrada'));
+            return Center(
+              child: Text(
+                'Sessão não encontrada',
+                style: AppTypography.body,
+              ),
+            );
           }
 
           final accountsAsync =
@@ -73,12 +88,12 @@ class _AccountsReceivableScreenState
                       Icon(
                         Icons.arrow_downward_outlined,
                         size: 64,
-                        color: Colors.grey[400],
+                        color: AppColors.textDisabled,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.blockSpacing),
                       Text(
                         'Nenhuma conta encontrada',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: AppTypography.subtitle,
                       ),
                     ],
                   ),
@@ -92,80 +107,61 @@ class _AccountsReceivableScreenState
                 },
                 child: ListView.builder(
                   itemCount: filteredAccounts.length,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   itemBuilder: (context, index) {
                     final account = filteredAccounts[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      color: account.isLate
-                          ? Colors.red[50]
-                          : account.isPaid
-                              ? Colors.green[50]
-                              : null,
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: account.isLate
-                              ? Colors.red
-                              : account.isPaid
-                                  ? Colors.green
-                                  : Colors.blue,
-                          child: Icon(
-                            account.isPaid
-                                ? Icons.check
-                                : account.isLate
-                                    ? Icons.warning
-                                    : Icons.schedule,
-                            color: Colors.white,
-                          ),
-                        ),
-                        title: Text(account.description ?? 'Sem descrição'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (account.dueDate != null)
-                              Text(
-                                'Vencimento: ${app_date_utils.DateUtils.formatDate(account.dueDate)}',
-                              ),
-                            if (account.paymentDate != null)
-                              Text(
-                                'Pagamento: ${app_date_utils.DateUtils.formatDate(account.paymentDate)}',
-                                style: const TextStyle(color: Colors.green),
-                              ),
-                          ],
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              CurrencyUtils.format(account.amount),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            Chip(
-                              label: Text(
-                                account.status == 'open'
-                                    ? 'Aberto'
-                                    : account.status == 'paid'
-                                        ? 'Pago'
-                                        : 'Atrasado',
-                              ),
-                              backgroundColor: account.status == 'open'
-                                  ? Colors.blue[100]
-                                  : account.status == 'paid'
-                                      ? Colors.green[100]
-                                      : Colors.red[100],
-                            ),
-                          ],
-                        ),
-                        onTap: account.isPaid
-                            ? null
-                            : () {
-                                _showMarkAsPaidDialog(account, session.companyId);
-                              },
+                    final status = _getStatus(account.status);
+
+                    String subtitle = '';
+                    if (account.dueDate != null) {
+                      subtitle +=
+                          'Vencimento: ${app_date_utils.DateUtils.formatDate(account.dueDate)}';
+                    }
+                    if (account.paymentDate != null) {
+                      if (subtitle.isNotEmpty) subtitle += '\n';
+                      subtitle +=
+                          'Pagamento: ${app_date_utils.DateUtils.formatDate(account.paymentDate)}';
+                    }
+
+                    Color iconColor;
+                    IconData iconData;
+                    if (account.isPaid) {
+                      iconColor = AppColors.statusPaid;
+                      iconData = Icons.check;
+                    } else if (account.isLate) {
+                      iconColor = AppColors.statusLate;
+                      iconData = Icons.warning;
+                    } else {
+                      iconColor = AppColors.statusOpen;
+                      iconData = Icons.schedule;
+                    }
+
+                    return AppListItem(
+                      title: account.description ?? 'Sem descrição',
+                      subtitle: subtitle.isNotEmpty ? subtitle : null,
+                      leading: CircleAvatar(
+                        backgroundColor: iconColor.withOpacity(0.1),
+                        child: Icon(iconData, color: iconColor),
                       ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            CurrencyUtils.format(account.amount),
+                            style: AppTypography.body.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          StatusBadge(status: status),
+                        ],
+                      ),
+                      onTap: account.isPaid
+                          ? null
+                          : () {
+                              _showMarkAsPaidDialog(account, session.companyId);
+                            },
                     );
                   },
                 ),
@@ -173,12 +169,20 @@ class _AccountsReceivableScreenState
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Center(
-              child: Text('Erro: $error'),
+              child: Text(
+                'Erro: $error',
+                style: AppTypography.body.copyWith(color: AppColors.error),
+              ),
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Erro: $error')),
+        error: (error, stack) => Center(
+          child: Text(
+            'Erro: $error',
+            style: AppTypography.body.copyWith(color: AppColors.error),
+          ),
+        ),
       ),
     );
   }
@@ -191,13 +195,21 @@ class _AccountsReceivableScreenState
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Marcar como Pago'),
+          backgroundColor: AppColors.cardBackground,
+          title: Text(
+            'Marcar como Pago',
+            style: AppTypography.subtitle,
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Valor: ${CurrencyUtils.format(account.amount)}'),
-              const SizedBox(height: 16),
-              TextButton(
+              Text(
+                'Valor: ${CurrencyUtils.format(account.amount)}',
+                style: AppTypography.body,
+              ),
+              const SizedBox(height: AppSpacing.blockSpacing),
+              OutlinedButton(
                 onPressed: () async {
                   final date = await showDatePicker(
                     context: context,
@@ -220,7 +232,10 @@ class _AccountsReceivableScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
+              child: Text(
+                'Cancelar',
+                style: AppTypography.body.copyWith(color: AppColors.primary),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -233,7 +248,7 @@ class _AccountsReceivableScreenState
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Conta marcada como paga!'),
-                        backgroundColor: Colors.green,
+                        backgroundColor: AppColors.success,
                       ),
                     );
                   }
@@ -242,7 +257,7 @@ class _AccountsReceivableScreenState
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Erro: ${e.toString()}'),
-                        backgroundColor: Colors.red,
+                        backgroundColor: AppColors.error,
                       ),
                     );
                   }

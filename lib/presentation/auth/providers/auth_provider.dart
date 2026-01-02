@@ -1,18 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../shared/providers/session_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
 });
 
 final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<void>>(
-  (ref) => AuthNotifier(ref.read(authRepositoryProvider)),
+  (ref) => AuthNotifier(ref),
 );
 
 class AuthNotifier extends StateNotifier<AsyncValue<void>> {
+  final Ref _ref;
   final AuthRepository _authRepository;
 
-  AuthNotifier(this._authRepository) : super(const AsyncValue.data(null));
+  AuthNotifier(this._ref)
+      : _authRepository = _ref.read(authRepositoryProvider),
+        super(const AsyncValue.data(null));
 
   Future<void> signUp({
     required String email,
@@ -57,7 +61,18 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> signOut() async {
     state = const AsyncValue.loading();
     try {
+      // Fazer logout primeiro
       await _authRepository.signOut();
+      
+      // Aguardar um pouco para garantir que o Supabase processe o logout
+      await Future.delayed(const Duration(milliseconds: 200));
+      
+      // Invalidar o sessionProvider após o signOut para garantir atualização
+      _ref.invalidate(sessionProvider);
+      
+      // Aguardar mais um pouco para garantir que o stream seja atualizado
+      await Future.delayed(const Duration(milliseconds: 100));
+      
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);

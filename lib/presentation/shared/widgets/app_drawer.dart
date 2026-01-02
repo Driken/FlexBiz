@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_theme.dart';
 import '../providers/session_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../dashboard/screens/dashboard_screen.dart';
@@ -16,83 +17,109 @@ class AppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionAsync = ref.watch(sessionProvider);
+    final currentRoute = ModalRoute.of(context)?.settings.name ?? '';
 
     return Drawer(
+      backgroundColor: AppColors.cardBackground,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           sessionAsync.when(
             data: (session) {
               if (session == null) {
-                return const DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
+                return Container(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
                   ),
-                  child: Text('FlexBiz'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'FlexBiz',
+                        style: AppTypography.title.copyWith(
+                          color: AppColors.textInverse,
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }
 
-              return DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+              return Container(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
                       'FlexBiz',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: AppTypography.title.copyWith(
+                        color: AppColors.textInverse,
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     Text(
                       session.profile.name ?? 'Usuário',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
-                          ),
+                      style: AppTypography.body.copyWith(
+                        color: AppColors.textInverse,
+                      ),
                     ),
                     if (session.profile.isSuperAdmin)
                       Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        margin: const EdgeInsets.only(top: AppSpacing.xs),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.purple,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text(
+                        child: Text(
                           'SUPER ADMIN',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.textInverse,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       )
                     else
-                      Text(
-                        'Empresa: ${session.companyId.substring(0, 8)}...',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white70,
-                            ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: AppSpacing.xs),
+                        child: Text(
+                          'Empresa: ${session.companyId.substring(0, 8)}...',
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.textInverse.withOpacity(0.8),
+                          ),
+                        ),
                       ),
                   ],
                 ),
               );
             },
-            loading: () => const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: CircularProgressIndicator(color: Colors.white),
+            loading: () => Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: const BoxDecoration(color: AppColors.primary),
+              child: const CircularProgressIndicator(color: AppColors.textInverse),
             ),
-            error: (error, stack) => const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text('Erro'),
+            error: (error, stack) => Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: const BoxDecoration(color: AppColors.primary),
+              child: Text(
+                'Erro',
+                style: AppTypography.body.copyWith(color: AppColors.textInverse),
+              ),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
+          _DrawerItem(
+            icon: Icons.dashboard,
+            title: 'Dashboard',
+            isActive: currentRoute.contains('dashboard'),
             onTap: () {
               Navigator.pop(context);
               Navigator.pushReplacement(
@@ -103,9 +130,10 @@ class AppDrawer extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.inventory_2),
-            title: const Text('Itens'),
+          _DrawerItem(
+            icon: Icons.inventory_2,
+            title: 'Itens',
+            isActive: currentRoute.contains('items'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -116,9 +144,10 @@ class AppDrawer extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text('Clientes'),
+          _DrawerItem(
+            icon: Icons.people,
+            title: 'Clientes',
+            isActive: currentRoute.contains('customers'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -129,9 +158,10 @@ class AppDrawer extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.shopping_cart),
-            title: const Text('Pedidos'),
+          _DrawerItem(
+            icon: Icons.shopping_cart,
+            title: 'Pedidos',
+            isActive: currentRoute.contains('orders'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -143,9 +173,10 @@ class AppDrawer extends ConsumerWidget {
             },
           ),
           const Divider(),
-          ListTile(
-            leading: const Icon(Icons.arrow_downward, color: Colors.green),
-            title: const Text('Contas a Receber'),
+          _DrawerItem(
+            icon: Icons.arrow_downward,
+            title: 'Contas a Receber',
+            isActive: currentRoute.contains('receivable'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -156,9 +187,10 @@ class AppDrawer extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.arrow_upward, color: Colors.red),
-            title: const Text('Contas a Pagar'),
+          _DrawerItem(
+            icon: Icons.arrow_upward,
+            title: 'Contas a Pagar',
+            isActive: currentRoute.contains('payable'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -175,10 +207,10 @@ class AppDrawer extends ConsumerWidget {
                 return Column(
                   children: [
                     const Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.admin_panel_settings, color: Colors.purple),
-                      title: const Text('Administração'),
-                      subtitle: const Text('Super Admin'),
+                    _DrawerItem(
+                      icon: Icons.admin_panel_settings,
+                      title: 'Administração',
+                      isActive: currentRoute.contains('admin'),
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(
@@ -198,15 +230,74 @@ class AppDrawer extends ConsumerWidget {
             error: (_, __) => const SizedBox.shrink(),
           ),
           const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Sair'),
+          _DrawerItem(
+            icon: Icons.logout,
+            title: 'Sair',
+            isActive: false,
             onTap: () async {
               Navigator.pop(context);
-              await ref.read(authProvider.notifier).signOut();
+              try {
+                // Fazer logout - o authProvider já invalida o sessionProvider
+                await ref.read(authProvider.notifier).signOut();
+                
+                // O MaterialApp em main.dart vai reagir automaticamente
+                // às mudanças no sessionProvider e redirecionar para LoginScreen
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erro ao fazer logout: ${e.toString()}'),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              }
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DrawerItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _DrawerItem({
+    required this.icon,
+    required this.title,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+      decoration: BoxDecoration(
+        color: isActive ? AppColors.primarySoft : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isActive ? AppColors.primary : AppColors.textSecondary,
+        ),
+        title: Text(
+          title,
+          style: AppTypography.body.copyWith(
+            color: isActive ? AppColors.primary : AppColors.textPrimary,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
       ),
     );
   }

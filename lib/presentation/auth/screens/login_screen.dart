@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_input.dart';
+import '../../../core/widgets/app_button.dart';
 import '../providers/auth_provider.dart';
 import 'signup_screen.dart';
 
@@ -16,6 +19,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void dispose() {
@@ -25,6 +30,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+    });
+
     if (!_formKey.currentState!.validate()) return;
 
     try {
@@ -36,7 +46,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         String errorMessage = 'Erro ao fazer login';
         
-        // Mensagens de erro mais amigáveis
         final errorString = e.toString();
         if (errorString.contains('404') || errorString.contains('Not Found')) {
           errorMessage = 'Erro: Supabase não configurado ou URL inválida.\n'
@@ -53,13 +62,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'OK',
-              textColor: Colors.white,
-              onPressed: () {},
-            ),
           ),
         );
       }
@@ -78,59 +82,69 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Icon(
-                    Icons.business_center,
-                    size: 80,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'FlexBiz',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Gestão para Pequenos Negócios',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'E-mail',
-                      prefixIcon: Icon(Icons.email),
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Icon(
+                      Icons.business_center,
+                      size: 80,
+                      color: AppColors.primary,
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Digite seu e-mail';
-                      }
-                      if (!value.contains('@')) {
-                        return 'E-mail inválido';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: 'Senha',
+                    const SizedBox(height: AppSpacing.xl),
+                    Text(
+                      'FlexBiz',
+                      style: AppTypography.title,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Gestão para Pequenos Negócios',
+                      style: AppTypography.body.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
+                    AppInput(
+                      label: 'E-mail',
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      prefixIcon: const Icon(Icons.email),
+                      errorText: _emailError,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          setState(() {
+                            _emailError = 'Digite seu e-mail';
+                          });
+                          return '';
+                        }
+                        if (!value.contains('@')) {
+                          setState(() {
+                            _emailError = 'E-mail inválido';
+                          });
+                          return '';
+                        }
+                        setState(() {
+                          _emailError = null;
+                        });
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.blockSpacing),
+                    AppInput(
+                      label: 'Senha',
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -144,52 +158,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           });
                         },
                       ),
+                      errorText: _passwordError,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          setState(() {
+                            _passwordError = 'Digite sua senha';
+                          });
+                          return '';
+                        }
+                        if (value.length < 6) {
+                          setState(() {
+                            _passwordError = 'Senha deve ter pelo menos 6 caracteres';
+                          });
+                          return '';
+                        }
+                        setState(() {
+                          _passwordError = null;
+                        });
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Digite sua senha';
-                      }
-                      if (value.length < 6) {
-                        return 'Senha deve ter pelo menos 6 caracteres';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 32),
-                  if (kDebugMode)
-                    OutlinedButton.icon(
-                      onPressed: _fillTestCredentials,
-                      icon: const Icon(Icons.bug_report, size: 18),
-                      label: const Text('Preencher Conta Teste'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.orange,
-                        side: const BorderSide(color: Colors.orange),
+                    const SizedBox(height: AppSpacing.xxl),
+                    if (kDebugMode)
+                      AppButton(
+                        text: 'Preencher Conta Teste',
+                        variant: AppButtonVariant.secondary,
+                        onPressed: _fillTestCredentials,
+                      ),
+                    if (kDebugMode) const SizedBox(height: AppSpacing.blockSpacing),
+                    AppButton(
+                      text: 'Entrar',
+                      onPressed: authState.isLoading ? null : _handleLogin,
+                      isLoading: authState.isLoading,
+                    ),
+                    const SizedBox(height: AppSpacing.blockSpacing),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignUpScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Não tem conta? Cadastre-se',
+                        style: AppTypography.body.copyWith(
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
-                  if (kDebugMode) const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: authState.isLoading ? null : _handleLogin,
-                    child: authState.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Entrar'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignUpScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text('Não tem conta? Cadastre-se'),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

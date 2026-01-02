@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flexbiz/data/models/account_payable_model.dart';
 import 'package:flexbiz/data/repositories/account_payable_repository.dart';
-import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
+import 'package:flexbiz/core/utils/session_utils.dart';
 import 'package:flexbiz/core/utils/date_utils.dart' as app_date_utils;
 import '../providers/accounts_payable_provider.dart';
 
@@ -39,9 +39,9 @@ class _AccountPayableFormScreenState
     });
 
     try {
-      final session = ref.read(sessionProvider).value;
+      final session = await getSessionSafely(ref);
       if (session == null) {
-        throw Exception('Sessão não encontrada');
+        throw Exception('Sessão não encontrada. Por favor, faça login novamente.');
       }
 
       final repo = AccountPayableRepository();

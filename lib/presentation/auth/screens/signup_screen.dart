@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_input.dart';
+import '../../../core/widgets/app_button.dart';
 import '../providers/auth_provider.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -19,6 +22,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _companyDocumentController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  String? _nameError;
+  String? _emailError;
+  String? _passwordError;
+  String? _confirmPasswordError;
+  String? _companyNameError;
 
   @override
   void dispose() {
@@ -32,6 +40,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   Future<void> _handleSignUp() async {
+    setState(() {
+      _nameError = null;
+      _emailError = null;
+      _passwordError = null;
+      _confirmPasswordError = null;
+      _companyNameError = null;
+    });
+
     if (!_formKey.currentState!.validate()) return;
 
     try {
@@ -49,7 +65,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Conta criada com sucesso!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -58,7 +74,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao criar conta: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -70,59 +86,74 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Criar Conta'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Dados Pessoais',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Seu Nome',
-                    prefixIcon: Icon(Icons.person),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Dados Pessoais',
+                    style: AppTypography.subtitle,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite seu nome';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'E-mail',
-                    prefixIcon: Icon(Icons.email),
+                  const SizedBox(height: AppSpacing.blockSpacing),
+                  AppInput(
+                    label: 'Seu Nome',
+                    controller: _nameController,
+                    prefixIcon: const Icon(Icons.person),
+                    errorText: _nameError,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        setState(() {
+                          _nameError = 'Digite seu nome';
+                        });
+                        return '';
+                      }
+                      setState(() {
+                        _nameError = null;
+                      });
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite seu e-mail';
-                    }
-                    if (!value.contains('@')) {
-                      return 'E-mail inválido';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Senha',
+                  const SizedBox(height: AppSpacing.blockSpacing),
+                  AppInput(
+                    label: 'E-mail',
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    prefixIcon: const Icon(Icons.email),
+                    errorText: _emailError,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        setState(() {
+                          _emailError = 'Digite seu e-mail';
+                        });
+                        return '';
+                      }
+                      if (!value.contains('@')) {
+                        setState(() {
+                          _emailError = 'E-mail inválido';
+                        });
+                        return '';
+                      }
+                      setState(() {
+                        _emailError = null;
+                      });
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.blockSpacing),
+                  AppInput(
+                    label: 'Senha',
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -136,23 +167,31 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         });
                       },
                     ),
+                    errorText: _passwordError,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        setState(() {
+                          _passwordError = 'Digite sua senha';
+                        });
+                        return '';
+                      }
+                      if (value.length < 6) {
+                        setState(() {
+                          _passwordError = 'Senha deve ter pelo menos 6 caracteres';
+                        });
+                        return '';
+                      }
+                      setState(() {
+                        _passwordError = null;
+                      });
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite sua senha';
-                    }
-                    if (value.length < 6) {
-                      return 'Senha deve ter pelo menos 6 caracteres';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: _obscureConfirmPassword,
-                  decoration: InputDecoration(
-                    labelText: 'Confirmar Senha',
+                  const SizedBox(height: AppSpacing.blockSpacing),
+                  AppInput(
+                    label: 'Confirmar Senha',
+                    controller: _confirmPasswordController,
+                    obscureText: _obscureConfirmPassword,
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -166,61 +205,74 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         });
                       },
                     ),
+                    errorText: _confirmPasswordError,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        setState(() {
+                          _confirmPasswordError = 'Confirme sua senha';
+                        });
+                        return '';
+                      }
+                      if (value != _passwordController.text) {
+                        setState(() {
+                          _confirmPasswordError = 'Senhas não coincidem';
+                        });
+                        return '';
+                      }
+                      setState(() {
+                        _confirmPasswordError = null;
+                      });
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Confirme sua senha';
-                    }
-                    if (value != _passwordController.text) {
-                      return 'Senhas não coincidem';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  'Dados da Empresa',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _companyNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nome da Empresa *',
-                    prefixIcon: Icon(Icons.business),
+                  const SizedBox(height: AppSpacing.xxl),
+                  Text(
+                    'Dados da Empresa',
+                    style: AppTypography.subtitle,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite o nome da empresa';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _companyDocumentController,
-                  decoration: const InputDecoration(
-                    labelText: 'CNPJ/CPF (opcional)',
-                    prefixIcon: Icon(Icons.badge),
+                  const SizedBox(height: AppSpacing.blockSpacing),
+                  AppInput(
+                    label: 'Nome da Empresa',
+                    controller: _companyNameController,
+                    prefixIcon: const Icon(Icons.business),
+                    errorText: _companyNameError,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        setState(() {
+                          _companyNameError = 'Digite o nome da empresa';
+                        });
+                        return '';
+                      }
+                      setState(() {
+                        _companyNameError = null;
+                      });
+                      return null;
+                    },
                   ),
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: authState.isLoading ? null : _handleSignUp,
-                  child: authState.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Criar Conta'),
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Já tem conta? Faça login'),
-                ),
-              ],
+                  const SizedBox(height: AppSpacing.blockSpacing),
+                  AppInput(
+                    label: 'CNPJ/CPF (opcional)',
+                    controller: _companyDocumentController,
+                    prefixIcon: const Icon(Icons.badge),
+                  ),
+                  const SizedBox(height: AppSpacing.xxl),
+                  AppButton(
+                    text: 'Criar Conta',
+                    onPressed: authState.isLoading ? null : _handleSignUp,
+                    isLoading: authState.isLoading,
+                  ),
+                  const SizedBox(height: AppSpacing.blockSpacing),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Já tem conta? Faça login',
+                      style: AppTypography.body.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

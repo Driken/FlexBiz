@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_list_item.dart';
+import '../../../core/widgets/status_badge.dart';
 import '../../shared/widgets/app_drawer.dart';
 import '../../shared/providers/session_provider.dart';
 import '../providers/orders_provider.dart';
@@ -23,6 +26,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
     final sessionAsync = ref.watch(sessionProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Pedidos'),
         actions: [
@@ -39,7 +43,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
               const PopupMenuItem(value: 'canceled', child: Text('Cancelados')),
             ],
             child: const Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(AppSpacing.lg),
               child: Icon(Icons.filter_list),
             ),
           ),
@@ -49,7 +53,12 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
       body: sessionAsync.when(
         data: (session) {
           if (session == null) {
-            return const Center(child: Text('Sessão não encontrada'));
+            return Center(
+              child: Text(
+                'Sessão não encontrada',
+                style: AppTypography.body,
+              ),
+            );
           }
 
           final ordersAsync = ref.watch(ordersProvider(session.companyId));
@@ -68,17 +77,19 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                       Icon(
                         Icons.shopping_cart_outlined,
                         size: 64,
-                        color: Colors.grey[400],
+                        color: AppColors.textDisabled,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.blockSpacing),
                       Text(
                         'Nenhum pedido encontrado',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: AppTypography.subtitle,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         'Toque no + para criar um pedido',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: AppTypography.body.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -91,70 +102,61 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                 },
                 child: ListView.builder(
                   itemCount: filteredOrders.length,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   itemBuilder: (context, index) {
                     final order = filteredOrders[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: order.isOpen
-                              ? Colors.green
-                              : order.isCompleted
-                                  ? Colors.blue
-                                  : Colors.grey,
-                          child: Icon(
-                            order.isOpen
-                                ? Icons.shopping_cart
-                                : order.isCompleted
-                                    ? Icons.check
-                                    : Icons.cancel,
-                            color: Colors.white,
-                          ),
-                        ),
-                        title: Text(
-                          'Pedido #${order.id.substring(0, 8)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              app_date_utils.DateUtils.formatDate(order.orderDate),
-                            ),
-                            if (order.totalAmount != null)
-                              Text(
-                                CurrencyUtils.format(order.totalAmount!),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                          ],
-                        ),
-                        trailing: Chip(
-                          label: Text(
-                            order.status == 'open'
-                                ? 'Aberto'
-                                : order.status == 'completed'
-                                    ? 'Concluído'
-                                    : 'Cancelado',
-                          ),
-                          backgroundColor: order.isOpen
-                              ? Colors.green[100]
-                              : order.isCompleted
-                                  ? Colors.blue[100]
-                                  : Colors.grey[300],
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  OrderDetailScreen(orderId: order.id),
-                            ),
-                          );
-                        },
+                    FinancialStatus status;
+                    if (order.status == 'open') {
+                      status = FinancialStatus.open;
+                    } else if (order.status == 'completed') {
+                      status = FinancialStatus.paid;
+                    } else {
+                      status = FinancialStatus.canceled;
+                    }
+
+                    String subtitle =
+                        app_date_utils.DateUtils.formatDate(order.orderDate);
+                    if (order.totalAmount != null) {
+                      subtitle += '\n${CurrencyUtils.format(order.totalAmount!)}';
+                    }
+
+                    Color iconColor;
+                    IconData iconData;
+                    if (order.isOpen) {
+                      iconColor = AppColors.statusOpen;
+                      iconData = Icons.shopping_cart;
+                    } else if (order.isCompleted) {
+                      iconColor = AppColors.statusPaid;
+                      iconData = Icons.check;
+                    } else {
+                      iconColor = AppColors.statusCanceled;
+                      iconData = Icons.cancel;
+                    }
+
+                    return AppListItem(
+                      title: 'Pedido #${order.id.substring(0, 8)}',
+                      subtitle: subtitle,
+                      leading: CircleAvatar(
+                        backgroundColor: iconColor.withOpacity(0.1),
+                        child: Icon(iconData, color: iconColor),
                       ),
+                      trailing: StatusBadge(
+                        status: status,
+                        customLabel: order.status == 'open'
+                            ? 'Aberto'
+                            : order.status == 'completed'
+                                ? 'Concluído'
+                                : 'Cancelado',
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                OrderDetailScreen(orderId: order.id),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -162,12 +164,20 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Center(
-              child: Text('Erro: $error'),
+              child: Text(
+                'Erro: $error',
+                style: AppTypography.body.copyWith(color: AppColors.error),
+              ),
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Erro: $error')),
+        error: (error, stack) => Center(
+          child: Text(
+            'Erro: $error',
+            style: AppTypography.body.copyWith(color: AppColors.error),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -178,7 +188,8 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.add, color: AppColors.textInverse),
       ),
     );
   }

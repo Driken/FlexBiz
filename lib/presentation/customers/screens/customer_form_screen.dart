@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/customer_model.dart';
 import '../../../data/repositories/customer_repository.dart';
-import '../../shared/providers/session_provider.dart';
+import '../../../core/utils/session_utils.dart';
 import '../providers/customers_provider.dart';
 
 class CustomerFormScreen extends ConsumerStatefulWidget {
@@ -51,9 +51,9 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
     });
 
     try {
-      final session = ref.read(sessionProvider).value;
+      final session = await getSessionSafely(ref);
       if (session == null) {
-        throw Exception('Sessão não encontrada');
+        throw Exception('Sessão não encontrada. Por favor, faça login novamente.');
       }
 
       final repo = CustomerRepository();

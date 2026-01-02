@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_input.dart';
+import '../../../core/widgets/app_list_item.dart';
 import '../../shared/widgets/app_drawer.dart';
 import '../../shared/providers/session_provider.dart';
 import '../providers/customers_provider.dart';
@@ -29,6 +32,7 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
     final sessionAsync = ref.watch(sessionProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Clientes'),
       ),
@@ -36,7 +40,12 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
       body: sessionAsync.when(
         data: (session) {
           if (session == null) {
-            return const Center(child: Text('Sessão não encontrada'));
+            return Center(
+              child: Text(
+                'Sessão não encontrada',
+                style: AppTypography.body,
+              ),
+            );
           }
 
           final customersAsync =
@@ -45,14 +54,11 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                child: AppInput(
+                  label: 'Buscar cliente',
                   controller: _searchController,
-                  decoration: const InputDecoration(
-                    labelText: 'Buscar cliente',
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(),
-                  ),
+                  prefixIcon: const Icon(Icons.search),
                   onChanged: (value) {
                     setState(() {});
                   },
@@ -82,20 +88,22 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
                             Icon(
                               Icons.people_outline,
                               size: 64,
-                              color: Colors.grey[400],
+                              color: AppColors.textDisabled,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppSpacing.blockSpacing),
                             Text(
                               searchTerm.isEmpty
                                   ? 'Nenhum cliente cadastrado'
                                   : 'Nenhum cliente encontrado',
-                              style: Theme.of(context).textTheme.titleLarge,
+                              style: AppTypography.subtitle,
                             ),
                             if (searchTerm.isEmpty) ...[
-                              const SizedBox(height: 8),
+                              const SizedBox(height: AppSpacing.sm),
                               Text(
                                 'Toque no + para adicionar',
-                                style: Theme.of(context).textTheme.bodyMedium,
+                                style: AppTypography.body.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ],
                           ],
@@ -109,7 +117,7 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
                       },
                       child: ListView.builder(
                         itemCount: filteredCustomers.length,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(AppSpacing.screenPadding),
                         itemBuilder: (context, index) {
                           final customer = filteredCustomers[index];
                           return FutureBuilder<double>(
@@ -117,43 +125,51 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
                                 .getTotalOpenAmount(customer.id),
                             builder: (context, snapshot) {
                               final totalOpen = snapshot.data ?? 0.0;
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    child: Text(
-                                      customer.name[0].toUpperCase(),
+                              String subtitle = '';
+                              if (customer.phone != null) {
+                                subtitle += 'Tel: ${customer.phone}';
+                              }
+                              if (customer.email != null) {
+                                if (subtitle.isNotEmpty) subtitle += '\n';
+                                subtitle += 'Email: ${customer.email}';
+                              }
+                              if (totalOpen > 0) {
+                                if (subtitle.isNotEmpty) subtitle += '\n';
+                                subtitle +=
+                                    'Total em aberto: ${CurrencyUtils.format(totalOpen)}';
+                              }
+
+                              return AppListItem(
+                                title: customer.name,
+                                subtitle: subtitle.isNotEmpty ? subtitle : null,
+                                leading: CircleAvatar(
+                                  backgroundColor: AppColors.primarySoft,
+                                  child: Text(
+                                    customer.name[0].toUpperCase(),
+                                    style: AppTypography.body.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  title: Text(customer.name),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      if (customer.phone != null)
-                                        Text('Tel: ${customer.phone}'),
-                                      if (customer.email != null)
-                                        Text('Email: ${customer.email}'),
-                                      if (totalOpen > 0)
-                                        Text(
-                                          'Total em aberto: ${CurrencyUtils.format(totalOpen)}',
-                                          style: TextStyle(
-                                            color: Colors.orange[700],
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            CustomerFormScreen(customer: customer),
-                                      ),
-                                    );
-                                  },
                                 ),
+                                trailing: totalOpen > 0
+                                    ? Text(
+                                        CurrencyUtils.format(totalOpen),
+                                        style: AppTypography.body.copyWith(
+                                          color: AppColors.warning,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      )
+                                    : null,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CustomerFormScreen(customer: customer),
+                                    ),
+                                  );
+                                },
                               );
                             },
                           );
@@ -164,7 +180,12 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(
-                    child: Text('Erro: $error'),
+                    child: Text(
+                      'Erro: $error',
+                      style: AppTypography.body.copyWith(
+                        color: AppColors.error,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -172,7 +193,12 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Erro: $error')),
+        error: (error, stack) => Center(
+          child: Text(
+            'Erro: $error',
+            style: AppTypography.body.copyWith(color: AppColors.error),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -183,7 +209,8 @@ class _CustomersListScreenState extends ConsumerState<CustomersListScreen> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.add, color: AppColors.textInverse),
       ),
     );
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flexbiz/data/models/item_model.dart';
 import 'package:flexbiz/data/repositories/item_repository.dart';
-import 'package:flexbiz/presentation/shared/providers/session_provider.dart';
+import 'package:flexbiz/core/utils/session_utils.dart';
 import '../providers/items_provider.dart';
 
 class ItemFormScreen extends ConsumerStatefulWidget {
@@ -49,9 +49,9 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
     });
 
     try {
-      final session = ref.read(sessionProvider).value;
+      final session = await getSessionSafely(ref);
       if (session == null) {
-        throw Exception('Sessão não encontrada');
+        throw Exception('Sessão não encontrada. Por favor, faça login novamente.');
       }
 
       final repo = ItemRepository();

@@ -1,0 +1,288 @@
+========================================================
+FLEXBIZ
+ESPECIFICAÇÃO VISUAL E DE EXPERIÊNCIA (UI/UX SPEC)
+VERSÃO 1.0
+========================================================
+
+1. OBJETIVO DO DOCUMENTO
+------------------------
+Este documento define, de forma objetiva e mensurável, o padrão visual
+e de experiência do usuário do sistema FlexBiz.
+
+Ele deve ser utilizado como FONTE ÚNICA DE VERDADE para qualquer
+implementação de interface, independentemente da tecnologia
+(Flutter, React, Vue, Android nativo, iOS, Web, etc).
+
+Nenhuma decisão visual deve ser tomada fora do que está descrito aqui.
+
+--------------------------------------------------------
+
+2. PERFIL DO USUÁRIO FINAL
+-------------------------
+Usuários de pequenos negócios, em sua maioria:
+
+- Idade média elevada
+- Baixa escolaridade formal
+- Pouca familiaridade com tecnologia
+- Uso predominante em celular
+- Necessidade de clareza, previsibilidade e segurança
+
+PRINCÍPIO CENTRAL:
+"O usuário não deve pensar, apenas reconhecer."
+
+--------------------------------------------------------
+
+3. PRINCÍPIOS DE UX (OBRIGATÓRIOS)
+---------------------------------
+1. Simplicidade acima de estética
+2. Uma ação principal por tela
+3. Textos sempre explícitos (evitar ícones sem rótulo)
+4. Feedback visual para toda ação
+5. Erro sempre explicado em texto simples
+6. Consistência absoluta entre telas
+
+--------------------------------------------------------
+
+4. PLATAFORMA E LAYOUT BASE
+---------------------------
+- Plataforma primária: Mobile
+- Orientação: Portrait
+- Largura máxima de conteúdo: 420px
+- Layout em coluna vertical
+- Navegação rasa (máximo 2 níveis)
+- Padding padrão da tela: 16px
+
+--------------------------------------------------------
+
+5. DESIGN TOKENS – CORES
+------------------------
+
+5.1 CORES DE MARCA
+- Primary: #2563EB
+- Primary Soft: #EFF6FF
+
+5.2 FUNDOS
+- Fundo do app: #F8FAFC
+- Fundo de cards: #FFFFFF
+
+5.3 TEXTO
+- Texto principal: #0F172A
+- Texto secundário: #475569
+- Texto desabilitado: #94A3B8
+- Texto inverso (sobre botões): #FFFFFF
+
+5.4 BORDAS
+- Borda padrão: #E2E8F0
+- Borda em foco: #2563EB
+
+5.5 STATUS
+- Sucesso: #16A34A
+- Atenção: #F59E0B
+- Erro: #DC2626
+- Informação: #2563EB
+
+REGRAS:
+- Nunca usar apenas cor para transmitir significado
+- Status sempre = cor + texto
+- Fundo sempre claro (sem dark mode)
+
+--------------------------------------------------------
+
+6. DESIGN TOKENS – TIPOGRAFIA
+-----------------------------
+
+Fonte padrão:
+- Inter (preferencial)
+- Roboto
+- Fonte do sistema (fallback)
+
+ESCALA TIPOGRÁFICA:
+
+Título:
+- Tamanho: 24px
+- Peso: 700
+- Line-height: 32px
+
+Subtítulo:
+- Tamanho: 18px
+- Peso: 600
+- Line-height: 26px
+
+Texto principal:
+- Tamanho: 16px
+- Peso: 400
+- Line-height: 24px
+
+Label:
+- Tamanho: 14px
+- Peso: 500
+- Line-height: 20px
+
+Texto auxiliar:
+- Tamanho: 13px
+- Peso: 400
+- Line-height: 18px
+
+REGRAS:
+- Nunca usar fonte menor que 14px
+- Nunca usar texto justificado
+- Nunca usar peso abaixo de 400
+
+--------------------------------------------------------
+
+7. DESIGN TOKENS – ESPAÇAMENTOS
+-------------------------------
+
+XS: 4px
+SM: 8px
+MD: 12px
+LG: 16px
+XL: 24px
+2XL: 32px
+
+PADRÕES FIXOS:
+- Padding interno de tela: 16px
+- Espaço entre blocos: 16px
+- Espaço entre label e input: 8px
+- Espaço entre cards: mínimo 12px
+
+--------------------------------------------------------
+
+8. DESIGN TOKENS – RAIOS E SOMBRAS
+---------------------------------
+
+Raios:
+- Inputs: 12px
+- Botões: 12px
+- Cards: 16px
+
+Sombra de card:
+- 0 4px 12px rgba(0,0,0,0.08)
+
+REGRAS:
+- Todos os elementos interativos devem ser arredondados
+- Nunca usar sombras fortes ou múltiplas
+
+--------------------------------------------------------
+
+9. COMPONENTE: INPUT
+--------------------
+
+Altura: 52px
+Padding horizontal: 16px
+Borda: 1px sólida (#E2E8F0)
+Raio: 12px
+Fundo: branco
+
+COMPORTAMENTO:
+- Label sempre acima
+- Placeholder apenas como exemplo
+- Erro exibido abaixo do campo em texto simples
+- Campo em erro: borda vermelha
+
+Nunca exibir erro apenas via snackbar.
+
+--------------------------------------------------------
+
+10. COMPONENTE: BOTÃO
+--------------------
+
+Altura: 52px
+Raio: 12px
+Texto: 16px
+
+VARIANTES:
+
+Primary:
+- Fundo: primary
+- Texto: branco
+
+Secondary:
+- Fundo: branco
+- Borda: padrão
+- Texto: principal
+
+Danger:
+- Fundo: vermelho
+- Texto: branco
+
+REGRAS:
+- Apenas 1 botão primary por tela
+- Texto sempre com verbo + ação
+- Loading não altera largura
+- Disabled: opacidade 40%
+
+--------------------------------------------------------
+
+11. COMPONENTE: LISTAS
+----------------------
+
+Altura mínima do item: 64px
+Padding interno: 16px
+Divider: 1px sólido (#E2E8F0)
+
+ESTRUTURA:
+- Linha 1: informação principal
+- Linha 2: complemento (status, data)
+- Item inteiro clicável
+
+--------------------------------------------------------
+
+12. STATUS FINANCEIROS (PADRÃO GLOBAL)
+-------------------------------------
+
+- Em aberto: azul
+- Pago: verde
+- Em atraso: vermelho
+- Cancelado: cinza
+
+Sempre exibir texto + cor.
+Nunca apenas cor.
+
+--------------------------------------------------------
+
+13. NAVEGAÇÃO
+-------------
+- Menu lateral (drawer)
+- Ícone + texto
+- Item ativo com fundo primarySoft
+- Nunca esconder menu em gestos complexos
+
+--------------------------------------------------------
+
+14. FEEDBACK E CONFIRMAÇÕES
+---------------------------
+- Snackbar verde para sucesso
+- Snackbar vermelho para erro
+- Confirmação obrigatória para:
+  - cancelar pedido
+  - marcar conta como paga
+- Pull-to-refresh em listas e dashboard
+
+--------------------------------------------------------
+
+15. TELAS COBERTAS POR ESTE DOCUMENTO
+------------------------------------
+- Login
+- Cadastro
+- Dashboard
+- Itens
+- Clientes
+- Pedidos
+- Contas a Receber
+- Contas a Pagar
+- Painel Admin
+- Navegação (Drawer)
+
+--------------------------------------------------------
+
+16. REGRA FINAL
+---------------
+Qualquer nova tela ou funcionalidade deve respeitar
+100% dos tokens, padrões e regras descritas neste documento.
+
+Qualquer exceção deve ser discutida e documentada.
+
+========================================================
+FIM DO DOCUMENTO
+========================================================

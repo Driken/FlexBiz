@@ -166,6 +166,7 @@ class OrderDetailScreen extends ConsumerWidget {
                               trailing: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     CurrencyUtils.format(account.amount),
@@ -173,6 +174,7 @@ class OrderDetailScreen extends ConsumerWidget {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                  const SizedBox(height: 4),
                                   Chip(
                                     label: Text(
                                       account.status == 'open'
@@ -180,7 +182,11 @@ class OrderDetailScreen extends ConsumerWidget {
                                           : account.status == 'paid'
                                               ? 'Pago'
                                               : 'Atrasado',
+                                      style: const TextStyle(fontSize: 12),
                                     ),
+                                    padding: EdgeInsets.zero,
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: VisualDensity.compact,
                                     backgroundColor: account.status == 'open'
                                         ? Colors.green[100]
                                         : account.status == 'paid'
